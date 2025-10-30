@@ -1111,7 +1111,7 @@
             if (!ctx) return;
 
             // Destruir gráfico anterior si existe
-            if (window.rankingChart) {
+            if (window.rankingChart && typeof window.rankingChart.destroy === 'function') {
                 window.rankingChart.destroy();
             }
 
