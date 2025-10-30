@@ -657,7 +657,7 @@
 
             // Si no se encuentra el candidato, usar imagen por defecto
             if (!folderName) {
-                return 'images/default.png';
+                return 'images/default.jpg';
             }
 
             // Determinar qué imagen mostrar según el score ponderado
@@ -674,13 +674,13 @@
             }
 
             // Retornar la ruta base (el navegador intentará cargar según el onerror)
-            return `images/candidatos/${folderName}/${imageType}.png`;
+            return `images/candidatos/${folderName}/${imageType}.jpg`;
         }
 
         function handleImageError(img, originalSrc, index) {
-            // Si la imagen original era .png, intentar con .jpg
-            if (originalSrc.endsWith('.png')) {
-                const jpgSrc = originalSrc.replace('.png', '.jpg');
+            // Si la imagen original era .jpg, intentar con .jpg
+            if (originalSrc.endsWith('.jpg')) {
+                const jpgSrc = originalSrc.replace('.jpg', '.jpg');
                 img.onerror = function () {
                     // Si .jpg también falla, mostrar el número de ranking
                     this.style.display = 'none';
@@ -717,19 +717,19 @@
                     type: 'alto',
                     label: 'Score Alto (>100)',
                     src: `images/candidatos/${folder}/alto.jpg`,
-                    fallback: `images/candidatos/${folder}/alto.png`
+                    fallback: `images/candidatos/${folder}/alto.jpg`
                 },
                 {
                     type: 'medio',
                     label: 'Score Medio (50-100)',
                     src: `images/candidatos/${folder}/medio.jpg`,
-                    fallback: `images/candidatos/${folder}/medio.png`
+                    fallback: `images/candidatos/${folder}/medio.jpg`
                 },
                 {
                     type: 'bajo',
                     label: 'Score Bajo (≤50)',
                     src: `images/candidatos/${folder}/bajo.jpg`,
-                    fallback: `images/candidatos/${folder}/bajo.png`
+                    fallback: `images/candidatos/${folder}/bajo.jpg`
                 }
             ];
         }
