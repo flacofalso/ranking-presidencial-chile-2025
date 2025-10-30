@@ -1092,7 +1092,18 @@
                 document.body.classList.add('dark-mode');
                 document.getElementById('darkModeToggle').textContent = '☀️';
             }
+            document.addEventListener('DOMContentLoaded', () => {
+                const isDark = localStorage.getItem('darkMode') === 'true';
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    document.getElementById('darkModeToggle').textContent = '☀️';
+                }
+
+                // AGREGAR ESTA LÍNEA:
+                loadRanking();
+            });
         });
+
 
         // ===== GRÁFICO DE RANKING =====
         function createRankingChart(candidates) {
