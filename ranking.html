@@ -1,0 +1,1197 @@
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO -->
+    <title>Ranking Presidencial Chile 2025 | Análisis en Tiempo Real</title>
+    <meta name="description" content="Análisis en tiempo real de menciones de candidatos presidenciales chilenos en medios digitales. Sistema de ponderación inteligente basado en múltiples factores.">
+    <meta name="keywords" content="elecciones chile 2025, candidatos presidenciales, ranking político, menciones medios, análisis electoral">
+    <meta name="author" content="Ranking Presidencial Chile">
+    
+    <!-- Open Graph (Facebook, LinkedIn) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Ranking Presidencial Chile 2025">
+    <meta property="og:description" content="Análisis en tiempo real de menciones de candidatos presidenciales en medios digitales">
+    <meta property="og:url" content="https://ranking-presidencial.vercel.app">
+    <meta property="og:site_name" content="Ranking Presidencial Chile">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Ranking Presidencial Chile 2025">
+    <meta name="twitter:description" content="Análisis en tiempo real de menciones en medios digitales">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🗳️</text></svg>">
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Botón de modo oscuro -->
+    <button id="darkModeToggle" class="dark-mode-btn" onclick="toggleDarkMode()" title="Cambiar tema">
+        🌙
+    </button>
+
+    <div class="container">
+        <div class="header">
+            <h1>🗳️ Ranking Presidencial Chile 2025</h1>
+            <p>Menciones en medios digitales - Datos en tiempo real</p>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            ⚠️ Esta herramienta analiza menciones en medios digitales y no constituye una encuesta o predicción electoral oficial.
+        </div>
+
+        <div id="error-container"></div>
+
+        <div class="main-grid">
+            <div class="main-content">
+                <!-- Gráfico comparativo -->
+                <div class="chart-container">
+                    <h3>📊 Comparación de Scores</h3>
+                    <canvas id="rankingChart"></canvas>
+                </div>
+
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Menciones</h3>
+                        <div class="number" id="total-mentions">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Candidatos</h3>
+                        <div class="number" id="total-candidates">8</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Medios Activos</h3>
+                        <div class="number" id="active-media">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Promedio</h3>
+                        <div class="number" id="average-mentions">-</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn" onclick="loadRanking()" id="update-btn">
+                        <span>🔄</span> Actualizar Datos
+                    </button>
+                    <button class="btn" onclick="clearCache()" id="clear-btn">
+                        <span>🗑️</span> Limpiar Cache
+                    </button>
+                    <button class="btn" onclick="toggleDateFilter()" id="filter-btn">
+                        <span>📅</span> Filtrar por Fecha
+                    </button>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <span>Cargando datos...</span>
+                    </div>
+                </div>
+
+                <!-- Filtro de fechas mejorado -->
+                <div class="date-filter" id="date-filter" style="display: none;">
+                    <div class="date-filter-header">
+                        <h3>📅 Filtrar por Período (Últimos 30 días)</h3>
+                        <button class="close-filter" onclick="toggleDateFilter()">✕</button>
+                    </div>
+
+                    <div class="date-range-info">
+                        <div class="info-box">
+                            <span class="info-icon">ℹ️</span>
+                            <div class="info-text">
+                                <strong>Plan Gratuito de NewsAPI:</strong>
+                                <p>Solo permite acceder a noticias de los últimos 30 días. Selecciona un rango dentro de
+                                    este período.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="date-inputs">
+                        <div class="date-input-group">
+                            <label>Desde:</label>
+                            <input type="date" id="date-from" min="" max="">
+                            <span class="date-helper" id="from-helper">Hace <span id="days-from">0</span> días</span>
+                        </div>
+                        <div class="date-input-group">
+                            <label>Hasta:</label>
+                            <input type="date" id="date-to" min="" max="">
+                            <span class="date-helper" id="to-helper">Hoy</span>
+                        </div>
+                    </div>
+
+                    <div class="date-range-display">
+                        <strong>Rango seleccionado:</strong> <span id="range-display">Selecciona fechas</span>
+                    </div>
+
+                    <div class="date-presets">
+                        <button class="preset-btn" onclick="setDateRange('today')">
+                            <span>📆</span> Hoy
+                        </button>
+                        <button class="preset-btn" onclick="setDateRange('3days')">
+                            <span>📅</span> Últimos 3 días
+                        </button>
+                        <button class="preset-btn" onclick="setDateRange('week')">
+                            <span>📅</span> Última semana
+                        </button>
+                        <button class="preset-btn" onclick="setDateRange('15days')">
+                            <span>📅</span> Últimos 15 días
+                        </button>
+                        <button class="preset-btn" onclick="setDateRange('30days')">
+                            <span>📅</span> Últimos 30 días
+                        </button>
+                    </div>
+
+                    <button class="btn" style="width: 100%; margin-top: 15px;" onclick="applyDateFilter()"
+                        id="apply-filter-btn">
+                        <span>✨</span> Aplicar Filtro y Actualizar
+                    </button>
+
+                    <button class="btn-secondary" style="width: 100%; margin-top: 10px;" onclick="clearDateFilter()">
+                        <span>🔄</span> Limpiar Filtro
+                    </button>
+
+                    <div class="api-limit-warning">
+                        <strong>⚠️ Límite de API:</strong> Plan gratuito permite 100 búsquedas/día.
+                        Cada actualización completa usa 8 búsquedas (1 por candidato).
+                    </div>
+                </div>
+
+                <div class="ranking-grid" id="ranking-grid">
+                    <!-- Los candidatos se cargarán aquí -->
+                </div>
+
+                <div class="timestamp" id="timestamp"></div>
+
+                <!-- Secciones desplegables en la parte inferior -->
+                <div class="info-sections">
+                    <div class="accordion-section">
+                        <button class="accordion-header" onclick="toggleAccordion('ponderacion')">
+                            <span class="accordion-title">
+                                <span class="accordion-icon">⚙️</span>
+                                Sistema de Ponderación
+                            </span>
+                            <span class="accordion-arrow" id="arrow-ponderacion">▼</span>
+                        </button>
+                        <div class="accordion-content" id="content-ponderacion" style="display: none;">
+                            <div style="color: #666; font-size: 0.85rem; line-height: 1.6; padding: 20px;">
+                                <p style="margin-bottom: 15px;"><strong>Factores que afectan el score:</strong></p>
+                                <div
+                                    style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                    <div style="margin-bottom: 10px;">📰 <strong>Título principal</strong> → Multiplica
+                                        por 2.0</div>
+                                    <div style="margin-bottom: 10px;">🔥 <strong>Última semana</strong> → Multiplica por
+                                        1.5</div>
+                                    <div style="margin-bottom: 10px;">📝 <strong>En descripción</strong> → Multiplica
+                                        por 1.3</div>
+                                    <div style="margin-bottom: 10px;">😊 <strong>Tono positivo</strong> → Multiplica por
+                                        1.2</div>
+                                    <div style="margin-bottom: 10px;">⭐ <strong>Medio principal</strong> → Multiplica
+                                        por 1.2</div>
+                                    <div>😞 <strong>Tono negativo</strong> → Multiplica por 0.9</div>
+                                </div>
+                                <p style="font-size: 0.85rem; color: #999; line-height: 1.5; margin-bottom: 15px;">
+                                    El score ponderado permite comparar candidatos de forma más justa, considerando la
+                                    calidad y relevancia de las menciones, no solo la cantidad.
+                                </p>
+                                <div
+                                    style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                                    <strong style="color: #1976d2;">📊 Ejemplo de Cálculo:</strong>
+                                    <p style="margin-top: 10px; font-size: 0.85rem; color: #555; line-height: 1.6;">
+                                        Un artículo que menciona al candidato en el título principal (2.0x), fue
+                                        publicado en la última semana (1.5x), en un medio importante como La Tercera
+                                        (1.2x), y tiene un tono positivo (1.2x), obtendría un score de: 1 × 2.0 × 1.5 ×
+                                        1.2 × 1.2 = <strong>4.32 puntos</strong> en lugar de solo 1 punto.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-section">
+                        <button class="accordion-header" onclick="toggleAccordion('tecnica')">
+                            <span class="accordion-title">
+                                <span class="accordion-icon">📊</span>
+                                Información Técnica
+                            </span>
+                            <span class="accordion-arrow" id="arrow-tecnica">▼</span>
+                        </button>
+                        <div class="accordion-content" id="content-tecnica" style="display: none;">
+                            <div style="padding: 20px;">
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                        <h4 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">🔌 Fuente de
+                                            Datos</h4>
+                                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
+                                            <strong>API:</strong> NewsAPI.org</p>
+                                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
+                                            <strong>Plan:</strong> Gratuito (100 requests/día)</p>
+                                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
+                                            <strong>Límite:</strong> 100 artículos por candidato</p>
+                                    </div>
+
+                                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                        <h4 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">⏰ Temporalidad
+                                        </h4>
+                                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
+                                            <strong>Período:</strong> Últimos 30 días</p>
+                                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
+                                            <strong>Cache:</strong> 1 hora</p>
+                                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
+                                            <strong>Actualización:</strong> Manual o automática</p>
+                                    </div>
+
+                                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                        <h4 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">⚡ Rendimiento
+                                        </h4>
+                                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
+                                            <strong>Tiempo:</strong> 10-20 segundos</p>
+                                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
+                                            <strong>Candidatos:</strong> 8 monitoreados</p>
+                                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
+                                            <strong>Medios:</strong> 10+ fuentes</p>
+                                    </div>
+                                </div>
+
+                                <div
+                                    style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px;">
+                                    <h4 style="color: #856404; margin-bottom: 10px; font-size: 0.95rem;">⚠️ Limitaciones
+                                        del Plan Gratuito</h4>
+                                    <ul
+                                        style="color: #856404; font-size: 0.85rem; line-height: 1.6; margin-left: 20px;">
+                                        <li>Máximo 100 artículos por búsqueda (candidatos populares pueden tener más)
+                                        </li>
+                                        <li>Solo últimos 30 días de noticias disponibles</li>
+                                        <li>100 búsquedas totales por día (8 candidatos = 8 búsquedas por actualización)
+                                        </li>
+                                        <li>No todos los medios chilenos están indexados en NewsAPI</li>
+                                    </ul>
+                                </div>
+
+                                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                                    <h4 style="color: #2e7d32; margin-bottom: 10px; font-size: 0.95rem;">✅ Badge 🔥 100+
+                                    </h4>
+                                    <p style="color: #2e7d32; font-size: 0.85rem; line-height: 1.6;">
+                                        Indica que el candidato alcanzó el límite de 100 artículos de la API gratuita.
+                                        Sus menciones reales probablemente son mayores. El <strong>Score
+                                            Ponderado</strong> proporciona una mejor comparación considerando la calidad
+                                        de los artículos, no solo la cantidad.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="sources-panel">
+                    <h3>📡 Fuentes Monitoreadas</h3>
+
+                    <div class="source-category">
+                        <h4>📰 Prensa Escrita</h4>
+                        <div class="source-list">
+                            <span class="source-badge">La Tercera</span>
+                            <span class="source-badge">BioBio Chile</span>
+                            <span class="source-badge">Cooperativa</span>
+                            <span class="source-badge">El Mercurio</span>
+                        </div>
+                    </div>
+
+                    <div class="source-category">
+                        <h4>📺 Televisión</h4>
+                        <div class="source-list">
+                            <span class="source-badge">Canal 13</span>
+                            <span class="source-badge">TVN</span>
+                            <span class="source-badge">Mega</span>
+                            <span class="source-badge">CHV</span>
+                        </div>
+                    </div>
+
+                    <div class="source-category">
+                        <h4>📻 Radio</h4>
+                        <div class="source-list">
+                            <span class="source-badge">BioBio</span>
+                            <span class="source-badge">Cooperativa</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
+                        <p style="font-size: 0.85rem; color: #666; line-height: 1.5;">
+                            <strong>💡 Metodología:</strong><br>
+                            Se analizan las plataformas digitales de cada medio buscando menciones de los candidatos en
+                            artículos y noticias publicadas.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sources-panel">
+                    <h3>⚙️ Configuración</h3>
+                    <div style="color: #666; font-size: 0.9rem; line-height: 1.6;">
+                        <p style="margin-bottom: 10px;"><strong>Fuente:</strong> NewsAPI.org</p>
+                        <p style="margin-bottom: 10px;"><strong>Cache:</strong> 1 hora</p>
+                        <p style="margin-bottom: 10px;"><strong>Período:</strong> Últimos 30 días</p>
+                        <p style="margin-bottom: 10px;"><strong>Tiempo de análisis:</strong> ~10-20 segundos</p>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #f0f0f0;">
+                        <p style="font-size: 0.85rem; color: #666; line-height: 1.5;">
+                            <strong>📊 Sobre los datos:</strong><br>
+                            Los candidatos con el badge 🔥 100+ han alcanzado el límite de la API gratuita. Sus
+                            menciones reales pueden ser mayores.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de carga -->
+    <div class="modal-overlay" id="loading-modal">
+        <div class="loading-modal">
+            <div class="big-spinner"></div>
+            <h2 id="modal-title">Actualizando Datos</h2>
+            <p id="modal-message">
+                Estamos analizando todos los medios de comunicación para obtener las menciones más recientes de cada
+                candidato.
+            </p>
+            <div class="time-estimate">
+                ⏱️ Tiempo estimado: <span id="time-estimate">3-5 minutos</span>
+            </div>
+            <div class="progress-info">
+                <p>Por favor, no cierres esta ventana mientras se procesan los datos.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de detalles -->
+    <div class="modal-overlay" id="details-modal">
+        <div class="modal-content" id="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001';
+        let currentData = null;
+        let dateFilterFrom = null;
+        let dateFilterTo = null;
+
+        // Calcular fechas permitidas (últimos 30 días)
+        function getDateLimits() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+
+            return {
+                min: thirtyDaysAgo.toISOString().split('T')[0],
+                max: today.toISOString().split('T')[0]
+            };
+        }
+
+        // Calcular días entre dos fechas
+        function daysBetween(date1, date2) {
+            const oneDay = 24 * 60 * 60 * 1000;
+            return Math.round(Math.abs((new Date(date1) - new Date(date2)) / oneDay));
+        }
+
+        // Actualizar helper text
+        function updateDateHelpers() {
+            const fromInput = document.getElementById('date-from');
+            const toInput = document.getElementById('date-to');
+            const today = new Date().toISOString().split('T')[0];
+
+            if (fromInput.value) {
+                const daysFrom = daysBetween(fromInput.value, today);
+                document.getElementById('days-from').textContent = daysFrom;
+            }
+
+            if (toInput.value) {
+                const daysTo = daysBetween(toInput.value, today);
+                document.getElementById('to-helper').textContent =
+                    daysTo === 0 ? 'Hoy' : `Hace ${daysTo} días`;
+            }
+
+            // Actualizar display del rango
+            if (fromInput.value && toInput.value) {
+                const daysDiff = daysBetween(fromInput.value, toInput.value);
+                document.getElementById('range-display').textContent =
+                    `${daysDiff + 1} días (${fromInput.value} a ${toInput.value})`;
+            }
+        }
+
+        function toggleDateFilter() {
+            const filter = document.getElementById('date-filter');
+            if (filter.style.display === 'none') {
+                filter.style.display = 'block';
+
+                // Configurar límites de fechas
+                const limits = getDateLimits();
+                const fromInput = document.getElementById('date-from');
+                const toInput = document.getElementById('date-to');
+
+                fromInput.min = limits.min;
+                fromInput.max = limits.max;
+                toInput.min = limits.min;
+                toInput.max = limits.max;
+
+                // Establecer valores por defecto si no están configurados
+                if (!fromInput.value) {
+                    fromInput.value = limits.min;
+                }
+                if (!toInput.value) {
+                    toInput.value = limits.max;
+                }
+
+                updateDateHelpers();
+
+                // Agregar listeners para actualizar helpers
+                fromInput.addEventListener('change', updateDateHelpers);
+                toInput.addEventListener('change', updateDateHelpers);
+            } else {
+                filter.style.display = 'none';
+            }
+        }
+
+        function setDateRange(range) {
+            const today = new Date();
+            const fromInput = document.getElementById('date-from');
+            const toInput = document.getElementById('date-to');
+
+            toInput.value = today.toISOString().split('T')[0];
+
+            let fromDate = new Date();
+
+            switch (range) {
+                case 'today':
+                    fromDate = new Date(today);
+                    break;
+                case '3days':
+                    fromDate.setDate(today.getDate() - 3);
+                    break;
+                case 'week':
+                    fromDate.setDate(today.getDate() - 7);
+                    break;
+                case '15days':
+                    fromDate.setDate(today.getDate() - 15);
+                    break;
+                case '30days':
+                    fromDate.setDate(today.getDate() - 30);
+                    break;
+            }
+
+            fromInput.value = fromDate.toISOString().split('T')[0];
+            updateDateHelpers();
+        }
+
+        function applyDateFilter() {
+            dateFilterFrom = document.getElementById('date-from').value;
+            dateFilterTo = document.getElementById('date-to').value;
+
+            if (!dateFilterFrom || !dateFilterTo) {
+                alert('Por favor selecciona ambas fechas');
+                return;
+            }
+
+            // Validar que from sea anterior a to
+            if (new Date(dateFilterFrom) > new Date(dateFilterTo)) {
+                alert('La fecha "Desde" debe ser anterior a la fecha "Hasta"');
+                return;
+            }
+
+            toggleDateFilter();
+
+            // Actualizar con filtro de fechas
+            loadRankingWithDates(dateFilterFrom, dateFilterTo);
+        }
+
+        function clearDateFilter() {
+            dateFilterFrom = null;
+            dateFilterTo = null;
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            document.getElementById('range-display').textContent = 'Selecciona fechas';
+            toggleDateFilter();
+            loadRanking(); // Cargar sin filtros
+        }
+
+        async function loadRankingWithDates(from, to) {
+            const loading = document.getElementById('loading');
+            const errorContainer = document.getElementById('error-container');
+            const rankingGrid = document.getElementById('ranking-grid');
+
+            showLoadingModal('update');
+            errorContainer.innerHTML = '';
+            rankingGrid.innerHTML = '<p style="text-align:center;color:white;font-size:1.2rem;">Cargando ranking filtrado...</p>';
+
+            try {
+                const url = `${API_URL}/api/ranking?from=${from}&to=${to}`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    currentData = result.data;
+                    displayRanking(result.data);
+                    updateStats(result.data);
+                    document.getElementById('timestamp').innerHTML =
+                        `Última actualización: ${new Date(result.timestamp).toLocaleString('es-CL')}${result.cached ? ' (desde cache)' : ' (datos frescos)'}${result.duration ? ' - Duración: ' + result.duration : ''}<br><span style="color: #667eea; font-weight: 600;">📅 Período: ${from} a ${to} (${daysBetween(from, to) + 1} días)</span>`;
+                } else {
+                    throw new Error(result.error || 'Error desconocido');
+                }
+            } catch (error) {
+                errorContainer.innerHTML = `
+                    <div class="error">
+                        ❌ Error al cargar datos: ${error.message}
+                        <br><small>Verifica que el servidor esté corriendo en http://localhost:3001</small>
+                    </div>
+                `;
+                rankingGrid.innerHTML = '';
+            } finally {
+                hideLoadingModal();
+            }
+        }
+
+        function showLoadingModal(action = 'update') {
+            const modal = document.getElementById('loading-modal');
+            const title = document.getElementById('modal-title');
+            const message = document.getElementById('modal-message');
+            const timeEstimate = document.getElementById('time-estimate');
+
+            if (action === 'clear') {
+                title.textContent = 'Limpiando Cache y Actualizando';
+                message.textContent = 'Se ha limpiado el cache. Ahora se realizará un análisis completo de todos los medios para obtener datos completamente frescos.';
+                timeEstimate.textContent = '3-5 minutos';
+            } else {
+                title.textContent = 'Actualizando Datos';
+                message.textContent = 'Estamos analizando todos los medios de comunicación para obtener las menciones más recientes de cada candidato.';
+                timeEstimate.textContent = '3-5 minutos';
+            }
+
+            modal.classList.add('active');
+
+            // Deshabilitar botones
+            document.getElementById('update-btn').disabled = true;
+            document.getElementById('clear-btn').disabled = true;
+        }
+
+        function hideLoadingModal() {
+            document.getElementById('loading-modal').classList.remove('active');
+
+            // Habilitar botones
+            document.getElementById('update-btn').disabled = false;
+            document.getElementById('clear-btn').disabled = false;
+        }
+
+        async function loadRanking() {
+            const errorContainer = document.getElementById('error-container');
+            const rankingGrid = document.getElementById('ranking-grid');
+
+            showLoadingModal('update');
+            errorContainer.innerHTML = '';
+            rankingGrid.innerHTML = '<p style="text-align:center;color:white;font-size:1.2rem;">Cargando ranking...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/ranking`);
+                const result = await response.json();
+
+                if (result.success) {
+                    currentData = result.data;
+                    displayRanking(result.data);
+                    updateStats(result.data);
+                    createRankingChart(result.data); // Crear gráfico
+                    document.getElementById('timestamp').textContent =
+                        `Última actualización: ${new Date(result.timestamp).toLocaleString('es-CL')}${result.cached ? ' (desde cache)' : ' (datos frescos)'}${result.duration ? ' - Duración: ' + result.duration : ''}`;
+                } else {
+                    throw new Error(result.error || 'Error desconocido');
+                }
+            } catch (error) {
+                errorContainer.innerHTML = `
+                    <div class="error">
+                        ❌ Error al cargar datos: ${error.message}
+                        <br><small>Verifica que el servidor esté corriendo en http://localhost:3001</small>
+                    </div>
+                `;
+                rankingGrid.innerHTML = '';
+            } finally {
+                hideLoadingModal();
+            }
+        }
+
+        // Función para obtener la imagen del candidato según su score
+        function getCandidateImage(candidateName, score) {
+            // Mapeo directo de nombres de candidatos a sus carpetas
+            const candidateFolders = {
+                'Evelyn Matthei': 'matthei',
+                'José Antonio Kast': 'kast',
+                'Johannes Kaiser': 'kaiser',
+                'Franco Parisi': 'parisi',
+                'Marco Enríquez-Ominami': 'me-o',
+                'Harold Mayne-Nicholls': 'mayne',
+                'Jeannette Jara': 'jara',
+                'Eduardo Artés': 'artes'
+            };
+
+            // Obtener el nombre de la carpeta del candidato
+            const folderName = candidateFolders[candidateName];
+            
+            // Si no se encuentra el candidato, usar imagen por defecto
+            if (!folderName) {
+                return 'images/default.png';
+            }
+
+            // Determinar qué imagen mostrar según el score ponderado
+            let imageType;
+            if (score > 100) {
+                imageType = 'alto';
+            } else if (score < 90 && score > 50) {
+                imageType = 'medio';
+            } else if (score <= 50) {
+                imageType = 'bajo';
+            } else {
+                // Score entre 90 y 100
+                imageType = 'medio';
+            }
+
+            // Retornar la ruta base (el navegador intentará cargar según el onerror)
+            return `images/candidatos/${folderName}/${imageType}.png`;
+        }
+
+        function handleImageError(img, originalSrc, index) {
+            // Si la imagen original era .png, intentar con .jpg
+            if (originalSrc.endsWith('.png')) {
+                const jpgSrc = originalSrc.replace('.png', '.jpg');
+                img.onerror = function() {
+                    // Si .jpg también falla, mostrar el número de ranking
+                    this.style.display = 'none';
+                    this.parentElement.innerHTML = `<div class='rank-badge'>#${index + 1}</div>`;
+                };
+                img.src = jpgSrc;
+            } else {
+                // Si ya intentamos con .jpg y falló, mostrar el número
+                img.style.display = 'none';
+                img.parentElement.innerHTML = `<div class='rank-badge'>#${index + 1}</div>`;
+            }
+        }
+
+        function getCandidateFolder(candidateName) {
+            const candidateFolders = {
+                'Evelyn Matthei': 'matthei',
+                'José Antonio Kast': 'kast',
+                'Johannes Kaiser': 'kaiser',
+                'Franco Parisi': 'parisi',
+                'Marco Enríquez-Ominami': 'me-o',
+                'Harold Mayne-Nicholls': 'mayne',
+                'Jeannette Jara': 'jara',
+                'Eduardo Artés': 'artes'
+            };
+            return candidateFolders[candidateName] || null;
+        }
+
+        function getAllCandidateImages(candidateName) {
+            const folder = getCandidateFolder(candidateName);
+            if (!folder) return [];
+
+            return [
+                {
+                    type: 'alto',
+                    label: 'Score Alto (>100)',
+                    src: `images/candidatos/${folder}/alto.jpg`,
+                    fallback: `images/candidatos/${folder}/alto.png`
+                },
+                {
+                    type: 'medio',
+                    label: 'Score Medio (50-100)',
+                    src: `images/candidatos/${folder}/medio.jpg`,
+                    fallback: `images/candidatos/${folder}/medio.png`
+                },
+                {
+                    type: 'bajo',
+                    label: 'Score Bajo (≤50)',
+                    src: `images/candidatos/${folder}/bajo.jpg`,
+                    fallback: `images/candidatos/${folder}/bajo.png`
+                }
+            ];
+        }
+
+        function displayRanking(candidates) {
+            const grid = document.getElementById('ranking-grid');
+            grid.innerHTML = '';
+
+            candidates.forEach((candidate, index) => {
+                const allMedia = [
+                    ...candidate.media.prensa,
+                    ...candidate.media.tv,
+                    ...candidate.media.radio
+                ];
+
+                const isAtLimit = candidate.mentions >= 100;
+                const limitBadge = isAtLimit ? '<span class="limit-badge" title="Este candidato alcanzó el límite de 100 resultados de NewsAPI. Las menciones reales pueden ser mayores.">🔥 100+</span>' : '';
+
+                const hasScore = candidate.weightedScore !== undefined;
+                const score = candidate.weightedScore || candidate.mentions;
+
+                // Obtener imagen del candidato
+                const candidateImage = getCandidateImage(candidate.name, score);
+
+                const scoreDisplay = hasScore ? `
+                    <div class="weighted-score">
+                        <div class="score-label">Score Ponderado</div>
+                        <div class="score-value">${candidate.weightedScore}</div>
+                    </div>
+                ` : '';
+
+                const card = document.createElement('div');
+                card.className = 'candidate-card';
+                card.onclick = () => showDetails(candidate);
+                card.innerHTML = `
+                    <div class="rank-badge">#${index + 1}</div>
+                    <div class="candidate-image-container">
+                        <img src="${candidateImage}" 
+                             alt="${candidate.name}" 
+                             class="candidate-image"
+                             onerror="handleImageError(this, '${candidateImage}', ${index})">
+                    </div>
+                    <div class="candidate-info">
+                        <h2>${candidate.name} ${limitBadge}</h2>
+                        <div class="party">${getPartyName(candidate.name)}</div>
+                        ${scoreDisplay}
+                        <div class="media-tags">
+                            ${allMedia.slice(0, 3).map(media =>
+                    `<span class="media-tag">${media}</span>`
+                ).join('')}
+                            ${allMedia.length > 3 ? `<span class="media-tag">+${allMedia.length - 3} más</span>` : ''}
+                        </div>
+                        ${candidate.metrics ? `
+                            <div class="mini-metrics">
+                                ${candidate.metrics.titleMentions > 0 ? `<span title="Menciones en títulos">📰 ${candidate.metrics.titleMentions}</span>` : ''}
+                                ${candidate.metrics.recentArticles > 0 ? `<span title="Artículos recientes (últimos 7 días)">🔥 ${candidate.metrics.recentArticles}</span>` : ''}
+                                ${candidate.metrics.sentiment.positive > 0 ? `<span title="Artículos con tono positivo">😊 ${candidate.metrics.sentiment.positive}</span>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="mentions-footer">
+                        <span class="count">${candidate.mentions}${isAtLimit ? '+' : ''}</span>
+                        <span class="label">artículos</span>
+                        ${candidate.totalResults && candidate.totalResults > 100 ?
+                        `<div class="total-hint">~${candidate.totalResults} resultados totales</div>` : ''}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateStats(candidates) {
+            const totalMentions = candidates.reduce((sum, c) => sum + c.mentions, 0);
+            const activeMedia = new Set();
+            candidates.forEach(c => {
+                [...c.media.prensa, ...c.media.tv, ...c.media.radio].forEach(m => activeMedia.add(m));
+            });
+
+            document.getElementById('total-mentions').textContent = totalMentions.toLocaleString();
+            document.getElementById('active-media').textContent = activeMedia.size;
+            document.getElementById('average-mentions').textContent =
+                Math.round(totalMentions / candidates.length);
+        }
+
+        function showDetails(candidate) {
+            const modal = document.getElementById('details-modal');
+            const modalBody = document.getElementById('modal-body');
+
+            // Función auxiliar para obtener detalles de menciones
+            const getMentionDetails = (mediaName, type) => {
+                if (!candidate.details || !candidate.details[type]) return null;
+                const detail = candidate.details[type].find(m => m.name === mediaName);
+                return detail;
+            };
+
+            // Función para generar URL de búsqueda
+            const getSearchUrl = (mediaName, candidateName) => {
+                const urls = {
+                    'La Tercera': `https://www.latercera.com/buscar/?q=${encodeURIComponent(candidateName)}`,
+                    'BioBio Chile': `https://www.biobiochile.cl/buscar?q=${encodeURIComponent(candidateName)}`,
+                    'Cooperativa': `https://www.cooperativa.cl/buscar?q=${encodeURIComponent(candidateName)}`,
+                    'El Mercurio': `https://www.emol.com/buscador/?q=${encodeURIComponent(candidateName)}`,
+                    'Canal 13': `https://www.t13.cl/buscar?q=${encodeURIComponent(candidateName)}`,
+                    'TVN': `https://www.tvn.cl/buscar?q=${encodeURIComponent(candidateName)}`,
+                    'Mega': `https://www.meganoticias.cl/buscar?q=${encodeURIComponent(candidateName)}`,
+                    'CHV': `https://www.chvnoticias.cl/buscar?q=${encodeURIComponent(candidateName)}`,
+                    'BioBio': `https://www.biobiochile.cl/buscar?q=${encodeURIComponent(candidateName)}`
+                };
+                return urls[mediaName] || '#';
+            };
+
+            // Crear lista de medios con detalles y artículo reciente (con filtro de fecha)
+            const renderMediaList = (mediaNames, type) => {
+                return mediaNames.map(mediaName => {
+                    const detail = getMentionDetails(mediaName, type);
+                    const count = detail ? detail.count : 0;
+                    const searchUrl = getSearchUrl(mediaName, candidate.name);
+                    const recentArticle = detail ? detail.recentArticle : null;
+
+                    // Verificar si el artículo está en el rango de fechas
+                    const showArticle = recentArticle && (recentArticle.title || recentArticle.link) &&
+                        isDateInRange(recentArticle.date);
+
+                    return `
+                        <div class="media-item-detailed">
+                            <div class="media-item-header">
+                                <span class="media-name">${mediaName}</span>
+                                <span class="media-count">${count} menciones</span>
+                            </div>
+                            
+                            ${showArticle ? `
+                                <div class="recent-article">
+                                    <div class="article-label">📄 Artículo más reciente sobre ${candidate.name.split(' ')[0]}:</div>
+                                    ${recentArticle.title ? `
+                                        <div class="article-title">${recentArticle.title}</div>
+                                    ` : ''}
+                                    ${recentArticle.date ? `
+                                        <div class="article-date">📅 ${recentArticle.date}</div>
+                                    ` : ''}
+                                    ${recentArticle.link ? `
+                                        <a href="${recentArticle.link}" target="_blank" class="article-link">
+                                            🔗 Leer artículo completo
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            ` : `
+                                <a href="${searchUrl}" target="_blank" class="search-link">
+                                    ${dateFilterFrom && dateFilterTo ?
+                            `🔍 Ver menciones en el período seleccionado` :
+                            `🔍 Ver todas las menciones en ${mediaName}`
+                        }
+                                </a>
+                            `}
+                        </div>
+                    `;
+                }).join('');
+            };
+
+            const candidateImages = getAllCandidateImages(candidate.name);
+            
+            modalBody.innerHTML = `
+                <h2>${candidate.name}</h2>
+                <p style="color:#666;margin-bottom:20px;">${getPartyName(candidate.name)}</p>
+                
+                ${candidateImages.length > 0 ? `
+                    <div class="image-gallery">
+                        ${candidateImages.map(img => `
+                            <div class="image-gallery-item">
+                                <div class="image-gallery-thumbnail">
+                                    <img src="${img.src}" 
+                                         alt="${img.label}"
+                                         onerror="this.src='${img.fallback}'">
+                                </div>
+                                <div class="image-gallery-label">${img.label.split('(')[0]}</div>
+                                <div class="gallery-score-badge ${img.type}">${img.label.match(/\(([^)]+)\)/)?.[1] || ''}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+                
+                ${candidate.weightedScore ? `
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 30px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Score Ponderado</div>
+                            <div style="font-size: 3rem; font-weight: bold;">${candidate.weightedScore}</div>
+                            <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">${candidate.mentions} artículos analizados</div>
+                        </div>
+                    </div>
+                ` : `
+                    <p style="font-size:1.5rem;color:#667eea;font-weight:bold;margin-bottom:30px;">
+                        ${candidate.mentions} artículos totales
+                    </p>
+                `}
+
+                ${candidate.metrics ? `
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+                        <h3 style="color: #333; font-size: 1.1rem; margin-bottom: 15px;">📊 Métricas de Análisis</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <div style="font-size: 0.75rem; color: #999; text-transform: uppercase; margin-bottom: 5px;">Menciones en Títulos</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;">${candidate.metrics.titleMentions}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #999; text-transform: uppercase; margin-bottom: 5px;">Artículos Recientes</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;">${candidate.metrics.recentArticles}</div>
+                                <div style="font-size: 0.7rem; color: #666;">Últimos 7 días</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #999; text-transform: uppercase; margin-bottom: 5px;">Frecuencia Diaria</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;">${candidate.metrics.frequency}</div>
+                                <div style="font-size: 0.7rem; color: #666;">artículos/día</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #999; text-transform: uppercase; margin-bottom: 5px;">Sentimiento</div>
+                                <div style="font-size: 0.9rem; display: flex; gap: 10px; margin-top: 5px;">
+                                    <span style="color: #4caf50;">😊 ${candidate.metrics.sentiment.positive}</span>
+                                    <span style="color: #999;">😐 ${candidate.metrics.sentiment.neutral}</span>
+                                    <span style="color: #f44336;">😞 ${candidate.metrics.sentiment.negative}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${candidate.media.prensa.length > 0 ? `
+                    <div class="media-section">
+                        <h3>📰 Prensa Escrita</h3>
+                        <div class="media-list-detailed">
+                            ${renderMediaList(candidate.media.prensa, 'prensa')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${candidate.media.tv.length > 0 ? `
+                    <div class="media-section">
+                        <h3>📺 Televisión</h3>
+                        <div class="media-list-detailed">
+                            ${renderMediaList(candidate.media.tv, 'tv')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${candidate.media.radio.length > 0 ? `
+                    <div class="media-section">
+                        <h3>📻 Radio</h3>
+                        <div class="media-list-detailed">
+                            ${renderMediaList(candidate.media.radio, 'radio')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${candidate.media.prensa.length === 0 && candidate.media.tv.length === 0 && candidate.media.radio.length === 0 ?
+                    '<p style="text-align:center;color:#999;">No se encontraron menciones en medios específicos</p>' : ''}
+
+                <div class="share-section">
+                    <h4>📱 Compartir este candidato:</h4>
+                    <div class="share-buttons">
+                        <button onclick="shareOnTwitter('${candidate.name}', ${candidate.weightedScore || candidate.mentions})" class="share-btn twitter">
+                            🐦 Twitter
+                        </button>
+                        <button onclick="shareOnWhatsApp('${candidate.name}', ${candidate.weightedScore || candidate.mentions})" class="share-btn whatsapp">
+                            💬 WhatsApp
+                        </button>
+                        <button onclick="copyLink('${candidate.name}')" class="share-btn copy">
+                            🔗 Copiar Link
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top:30px;padding-top:20px;border-top:2px solid #f0f0f0;">
+                    <p style="font-size:0.85rem;color:#999;line-height:1.5;">
+                        💡 <strong>Sobre el Score Ponderado:</strong> Este score considera múltiples factores: prominencia en títulos (2x), recencia de artículos (1.5x), menciones en descripciones (1.3x), sentimiento del contenido, y la calidad de la fuente. Esto permite una comparación más justa entre candidatos que alcanzan el límite de 100 artículos.
+                    </p>
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('details-modal').classList.remove('active');
+        }
+
+        async function clearCache() {
+            if (!confirm('¿Estás seguro de limpiar el cache? Esto forzará una nueva búsqueda completa que tomará 3-5 minutos.')) {
+                return;
+            }
+
+            showLoadingModal('clear');
+
+            try {
+                const response = await fetch(`${API_URL}/api/cache/clear`, { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    // Ahora cargar datos frescos
+                    await loadRanking();
+                }
+            } catch (error) {
+                hideLoadingModal();
+                alert('❌ Error al limpiar cache: ' + error.message);
+            }
+        }
+
+        function getPartyName(name) {
+            const parties = {
+                'Evelyn Matthei': 'UDI',
+                'José Antonio Kast': 'Republicanos',
+                'Johannes Kaiser': 'Independiente',
+                'Franco Parisi': 'Partido de la Gente',
+                'Marco Enríquez-Ominami': 'PRO',
+                'Harold Mayne-Nicholls': 'Unidos por Chile',
+                'Jeannette Jara': 'Partido Comunista',
+                'Eduardo Artés': 'Unión Patriótica'
+            };
+            return parties[name] || 'Independiente';
+        }
+
+        // Cerrar modal al hacer click fuera
+        document.getElementById('details-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'details-modal') {
+                closeModal();
+            }
+        });
+
+        // Cargar datos al iniciar
+        loadRanking();
+
+        // Auto-actualizar cada 1 hora (3600000 ms)
+        setInterval(loadRanking, 3600000);
+
+        // Función para toggle de acordeón
+        function toggleAccordion(id) {
+            const content = document.getElementById(`content-${id}`);
+            const arrow = document.getElementById(`arrow-${id}`);
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                content.classList.add('open');
+                arrow.classList.add('rotated');
+            } else {
+                content.style.display = 'none';
+                content.classList.remove('open');
+                arrow.classList.remove('rotated');
+            }
+        }
+
+        // ===== MODO OSCURO =====
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
+        }
+
+        // Cargar preferencia al inicio
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').textContent = '☀️';
+            }
+        });
+
+        // ===== GRÁFICO DE RANKING =====
+        function createRankingChart(candidates) {
+            const ctx = document.getElementById('rankingChart');
+            if (!ctx) return;
+            
+            // Destruir gráfico anterior si existe
+            if (window.rankingChart) {
+                window.rankingChart.destroy();
+            }
+            
+            // Ordenar y tomar top 8
+            const sortedCandidates = [...candidates].sort((a, b) => 
+                (b.weightedScore || b.mentions) - (a.weightedScore || a.mentions)
+            ).slice(0, 8);
+            
+            const labels = sortedCandidates.map(c => c.name);
+            const scores = sortedCandidates.map(c => c.weightedScore || c.mentions);
+            
+            // Colores degradados
+            const colors = sortedCandidates.map((_, index) => {
+                const hue = 250 - (index * 20);
+                return `hsla(${hue}, 70%, 60%, 0.8)`;
+            });
+            
+            window.rankingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Score Ponderado',
+                        data: scores,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.8', '1')),
+                        borderWidth: 2,
+                        borderRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Score: ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===== COMPARTIR EN REDES =====
+        function shareOnTwitter(candidateName, score) {
+            const text = `${candidateName} tiene un score de ${score} en el Ranking Presidencial Chile 2025 📊`;
+            const url = window.location.href;
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        }
+
+        function shareOnWhatsApp(candidateName, score) {
+            const text = `${candidateName} tiene un score de ${score} en el Ranking Presidencial Chile 2025 📊\n${window.location.href}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function copyLink(candidateName) {
+            const url = `${window.location.href}?candidate=${encodeURIComponent(candidateName)}`;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('✅ Link copiado al portapapeles');
+            }).catch(() => {
+                alert('❌ No se pudo copiar el link');
+            });
+        }
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Sobre el Proyecto</h4>
+                <p>Herramienta de análisis en tiempo real de menciones de candidatos presidenciales en medios digitales chilenos.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Metodología</h4>
+                <p>Sistema de ponderación basado en: prominencia en títulos, recencia, sentimiento y calidad de fuente.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Disclaimer</h4>
+                <p>Esta herramienta no constituye una encuesta electoral oficial ni una predicción de resultados.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Ranking Presidencial Chile | Datos actualizados automáticamente</p>
+        </div>
+    </footer>
+</body>
+
+</html>
