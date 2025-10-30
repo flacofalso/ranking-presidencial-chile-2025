@@ -3,31 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- SEO -->
     <title>Ranking Presidencial Chile 2025 | Análisis en Tiempo Real</title>
-    <meta name="description" content="Análisis en tiempo real de menciones de candidatos presidenciales chilenos en medios digitales. Sistema de ponderación inteligente basado en múltiples factores.">
-    <meta name="keywords" content="elecciones chile 2025, candidatos presidenciales, ranking político, menciones medios, análisis electoral">
+    <meta name="description"
+        content="Análisis en tiempo real de menciones de candidatos presidenciales chilenos en medios digitales. Sistema de ponderación inteligente basado en múltiples factores.">
+    <meta name="keywords"
+        content="elecciones chile 2025, candidatos presidenciales, ranking político, menciones medios, análisis electoral">
     <meta name="author" content="Ranking Presidencial Chile">
-    
+
     <!-- Open Graph (Facebook, LinkedIn) -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Ranking Presidencial Chile 2025">
-    <meta property="og:description" content="Análisis en tiempo real de menciones de candidatos presidenciales en medios digitales">
+    <meta property="og:description"
+        content="Análisis en tiempo real de menciones de candidatos presidenciales en medios digitales">
     <meta property="og:url" content="https://ranking-presidencial.vercel.app">
     <meta property="og:site_name" content="Ranking Presidencial Chile">
-    
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Ranking Presidencial Chile 2025">
     <meta name="twitter:description" content="Análisis en tiempo real de menciones en medios digitales">
-    
+
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🗳️</text></svg>">
-    
+    <link rel="icon" type="image/png"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🗳️</text></svg>">
+
     <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-    
+
     <!-- Estilos -->
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -46,7 +50,8 @@
 
         <!-- Disclaimer -->
         <div class="disclaimer">
-            ⚠️ Esta herramienta analiza menciones en medios digitales y no constituye una encuesta o predicción electoral oficial.
+            ⚠️ Esta herramienta analiza menciones en medios digitales y no constituye una encuesta o predicción
+            electoral oficial.
         </div>
 
         <div id="error-container"></div>
@@ -229,33 +234,42 @@
                                         <h4 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">🔌 Fuente de
                                             Datos</h4>
                                         <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
-                                            <strong>API:</strong> NewsAPI.org</p>
+                                            <strong>API:</strong> NewsAPI.org
+                                        </p>
                                         <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
-                                            <strong>Plan:</strong> Gratuito (100 requests/día)</p>
+                                            <strong>Plan:</strong> Gratuito (100 requests/día)
+                                        </p>
                                         <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
-                                            <strong>Límite:</strong> 100 artículos por candidato</p>
+                                            <strong>Límite:</strong> 100 artículos por candidato
+                                        </p>
                                     </div>
 
                                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                         <h4 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">⏰ Temporalidad
                                         </h4>
                                         <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
-                                            <strong>Período:</strong> Últimos 30 días</p>
+                                            <strong>Período:</strong> Últimos 30 días
+                                        </p>
                                         <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
-                                            <strong>Cache:</strong> 1 hora</p>
+                                            <strong>Cache:</strong> 1 hora
+                                        </p>
                                         <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
-                                            <strong>Actualización:</strong> Manual o automática</p>
+                                            <strong>Actualización:</strong> Manual o automática
+                                        </p>
                                     </div>
 
                                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                         <h4 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">⚡ Rendimiento
                                         </h4>
                                         <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
-                                            <strong>Tiempo:</strong> 10-20 segundos</p>
+                                            <strong>Tiempo:</strong> 10-20 segundos
+                                        </p>
                                         <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
-                                            <strong>Candidatos:</strong> 8 monitoreados</p>
+                                            <strong>Candidatos:</strong> 8 monitoreados
+                                        </p>
                                         <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">
-                                            <strong>Medios:</strong> 10+ fuentes</p>
+                                            <strong>Medios:</strong> 10+ fuentes
+                                        </p>
                                     </div>
                                 </div>
 
@@ -379,7 +393,7 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3001';
+        const API_URL = 'https://ranking-backend-8vfa.onrender.com';
         let currentData = null;
         let dateFilterFrom = null;
         let dateFilterTo = null;
@@ -640,7 +654,7 @@
 
             // Obtener el nombre de la carpeta del candidato
             const folderName = candidateFolders[candidateName];
-            
+
             // Si no se encuentra el candidato, usar imagen por defecto
             if (!folderName) {
                 return 'images/default.png';
@@ -667,7 +681,7 @@
             // Si la imagen original era .png, intentar con .jpg
             if (originalSrc.endsWith('.png')) {
                 const jpgSrc = originalSrc.replace('.png', '.jpg');
-                img.onerror = function() {
+                img.onerror = function () {
                     // Si .jpg también falla, mostrar el número de ranking
                     this.style.display = 'none';
                     this.parentElement.innerHTML = `<div class='rank-badge'>#${index + 1}</div>`;
@@ -875,7 +889,7 @@
             };
 
             const candidateImages = getAllCandidateImages(candidate.name);
-            
+
             modalBody.innerHTML = `
                 <h2>${candidate.name}</h2>
                 <p style="color:#666;margin-bottom:20px;">${getPartyName(candidate.name)}</p>
@@ -1084,26 +1098,26 @@
         function createRankingChart(candidates) {
             const ctx = document.getElementById('rankingChart');
             if (!ctx) return;
-            
+
             // Destruir gráfico anterior si existe
             if (window.rankingChart) {
                 window.rankingChart.destroy();
             }
-            
+
             // Ordenar y tomar top 8
-            const sortedCandidates = [...candidates].sort((a, b) => 
+            const sortedCandidates = [...candidates].sort((a, b) =>
                 (b.weightedScore || b.mentions) - (a.weightedScore || a.mentions)
             ).slice(0, 8);
-            
+
             const labels = sortedCandidates.map(c => c.name);
             const scores = sortedCandidates.map(c => c.weightedScore || c.mentions);
-            
+
             // Colores degradados
             const colors = sortedCandidates.map((_, index) => {
                 const hue = 250 - (index * 20);
                 return `hsla(${hue}, 70%, 60%, 0.8)`;
             });
-            
+
             window.rankingChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -1126,7 +1140,7 @@
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
                             padding: 12,
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     return 'Score: ' + context.parsed.y;
                                 }
                             }
@@ -1177,11 +1191,13 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h4>Sobre el Proyecto</h4>
-                <p>Herramienta de análisis en tiempo real de menciones de candidatos presidenciales en medios digitales chilenos.</p>
+                <p>Herramienta de análisis en tiempo real de menciones de candidatos presidenciales en medios digitales
+                    chilenos.</p>
             </div>
             <div class="footer-section">
                 <h4>Metodología</h4>
-                <p>Sistema de ponderación basado en: prominencia en títulos, recencia, sentimiento y calidad de fuente.</p>
+                <p>Sistema de ponderación basado en: prominencia en títulos, recencia, sentimiento y calidad de fuente.
+                </p>
             </div>
             <div class="footer-section">
                 <h4>Disclaimer</h4>
