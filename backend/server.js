@@ -1,4 +1,5 @@
-// server.js - Backend con NewsAPI para datos reales
+// server.js - Backend MEJORADO con NewsAPI y seguridad
+require('dotenv').config(); // Cargar variables de entorno
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -7,15 +8,38 @@ const NodeCache = require('node-cache');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// ⚙️ CONFIGURACIÓN DE NEWSAPI
-const NEWSAPI_KEY = '6c069331086f4735bfce4f4edf639bca'; // Tu API Key de NewsAPI
+// ⚙️ CONFIGURACIÓN DE NEWSAPI - SEGURA CON VARIABLES DE ENTORNO
+const NEWSAPI_KEY = process.env.NEWSAPI_KEY;
 const NEWSAPI_URL = 'https://newsapi.org/v2/everything';
+
+// Validación de API Key
+if (!NEWSAPI_KEY || NEWSAPI_KEY === 'tu_api_key_aqui') {
+    console.error('❌ ERROR: NEWSAPI_KEY no está configurada');
+    console.error('💡 Crea un archivo .env con: NEWSAPI_KEY=tu_clave_real');
+    process.exit(1);
+}
 
 // Cache: guarda resultados por 1 hora
 const cache = new NodeCache({ stdTTL: 3600 });
 
-// Permitir peticiones desde el frontend
-app.use(cors());
+// CORS configuración mejorada
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:3000', 'http://localhost:5500'];
+
+app.use(cors({
+    origin: function(origin, callback) {
+        // Permitir requests sin origin (como Postman)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+}));
+
 app.use(express.json());
 
 // Candidatos oficiales
@@ -162,8 +186,6 @@ async function searchWithNewsAPIGeneral(candidateName, dateFrom = null, dateTo =
             });
         });
 
-        console.log(`✅ NewsAPI (general): ${totalResults} resultados`);
-
         return {
             totalResults: totalResults,
             articlesCount: articles.length,
@@ -182,7 +204,7 @@ async function searchWithNewsAPIGeneral(candidateName, dateFrom = null, dateTo =
     }
 }
 
-// Procesar resultados por categoría de medio con PONDERACIÓN INTELIGENTE
+// Función para categorizar y ponderar resultados
 function categorizeResults(articlesBySource, candidateName) {
     const results = {
         prensa: [],
@@ -194,9 +216,13 @@ function categorizeResults(articlesBySource, candidateName) {
         metrics: {
             titleMentions: 0,
             descriptionMentions: 0,
-            recentArticles: 0, // últimos 7 días
+            recentArticles: 0,
             oldArticles: 0,
-            sentiment: { positive: 0, neutral: 0, negative: 0 },
+            sentiment: {
+                positive: 0,
+                neutral: 0,
+                negative: 0
+            },
             frequency: 0
         }
     };
@@ -334,7 +360,138 @@ function categorizeResults(articlesBySource, candidateName) {
     return results;
 }
 
-// ENDPOINTS DE LA API
+// 🆕 NUEVO ENDPOINT: Datos para gráficos de tendencia temporal
+app.get('/api/trending/:name', async (req, res) => {
+    try {
+        const candidateName = decodeURIComponent(req.params.name);
+        const days = parseInt(req.query.days) || 30;
+        
+        const cacheKey = `trending_${candidateName}_${days}`;
+        const cached = cache.get(cacheKey);
+        
+        if (cached) {
+            return res.json({
+                success: true,
+                data: cached,
+                cached: true
+            });
+        }
+
+        // Obtener datos de los últimos N días
+        const now = new Date();
+        const timeline = [];
+        
+        // Generar timeline por días
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date(now);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            
+            timeline.push({
+                date: dateStr,
+                mentions: 0,
+                score: 0
+            });
+        }
+        
+        // Obtener artículos del período completo
+        const fromDate = new Date(now);
+        fromDate.setDate(fromDate.getDate() - days);
+        
+        const newsData = await searchWithNewsAPI(
+            candidateName,
+            fromDate.toISOString(),
+            now.toISOString()
+        );
+        
+        // Distribuir artículos por día
+        newsData.allArticles.forEach(article => {
+            const articleDate = new Date(article.publishedAt).toISOString().split('T')[0];
+            const dayData = timeline.find(d => d.date === articleDate);
+            if (dayData) {
+                dayData.mentions += 1;
+                dayData.score += 1; // Aquí podrías aplicar la ponderación también
+            }
+        });
+        
+        const result = {
+            candidate: candidateName,
+            period: `${days} días`,
+            timeline: timeline
+        };
+        
+        cache.set(cacheKey, result, 3600); // Cache por 1 hora
+        
+        res.json({
+            success: true,
+            data: result,
+            cached: false
+        });
+        
+    } catch (error) {
+        console.error('Error en trending:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// 🆕 NUEVO ENDPOINT: Comparación directa entre candidatos
+app.get('/api/compare', async (req, res) => {
+    try {
+        const candidates = req.query.candidates ? req.query.candidates.split(',') : [];
+        
+        if (candidates.length < 2) {
+            return res.status(400).json({
+                success: false,
+                error: 'Se requieren al menos 2 candidatos para comparar'
+            });
+        }
+        
+        const cacheKey = `compare_${candidates.sort().join('_')}`;
+        const cached = cache.get(cacheKey);
+        
+        if (cached) {
+            return res.json({
+                success: true,
+                data: cached,
+                cached: true
+            });
+        }
+        
+        const comparison = [];
+        
+        for (const candidate of candidates) {
+            const newsData = await searchWithNewsAPI(candidate);
+            const categorizedData = categorizeResults(newsData.articlesBySource, candidate);
+            
+            comparison.push({
+                name: candidate,
+                mentions: categorizedData.total,
+                weightedScore: categorizedData.weightedScore,
+                metrics: categorizedData.metrics
+            });
+        }
+        
+        cache.set(cacheKey, comparison, 3600);
+        
+        res.json({
+            success: true,
+            data: comparison,
+            cached: false
+        });
+        
+    } catch (error) {
+        console.error('Error en comparación:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ENDPOINTS EXISTENTES
 
 app.get('/api/candidate/:name', async (req, res) => {
     try {
@@ -429,11 +586,11 @@ app.get('/api/ranking', async (req, res) => {
                 details: categorizedData
             });
 
-            // Pausa para no exceder rate limit (NewsAPI: 100 requests/día en plan gratuito)
+            // Pausa para no exceder rate limit
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
-        // Ordenar por SCORE PONDERADO, no por menciones simples
+        // Ordenar por SCORE PONDERADO
         ranking.sort((a, b) => b.weightedScore - a.weightedScore);
         cache.set(cacheKey, ranking);
 
@@ -474,7 +631,7 @@ app.get('/health', (req, res) => {
         status: 'ok',
         timestamp: new Date().toISOString(),
         api: 'NewsAPI',
-        apiConfigured: NEWSAPI_KEY !== 'TU_API_KEY_AQUI',
+        apiConfigured: !!NEWSAPI_KEY,
         cache: {
             entries: cacheKeys.length,
             keys: cacheKeys
@@ -485,12 +642,15 @@ app.get('/health', (req, res) => {
 
 app.get('/', (req, res) => {
     res.json({
-        name: 'Ranking Presidencial Chile 2025 - API con NewsAPI',
-        version: '3.0.0',
+        name: 'Ranking Presidencial Chile 2025 - API MEJORADA',
+        version: '4.0.0',
         dataSource: 'NewsAPI.org',
+        security: '🔒 API Key protegida con variables de entorno',
         endpoints: {
             ranking: 'GET /api/ranking?from=YYYY-MM-DD&to=YYYY-MM-DD',
             candidate: 'GET /api/candidate/:name?from=YYYY-MM-DD&to=YYYY-MM-DD',
+            trending: 'GET /api/trending/:name?days=30 (NUEVO)',
+            compare: 'GET /api/compare?candidates=nombre1,nombre2 (NUEVO)',
             cache_clear: 'POST /api/cache/clear',
             health: 'GET /health'
         },
@@ -506,23 +666,21 @@ app.get('/', (req, res) => {
 // Iniciar servidor
 app.listen(PORT, () => {
     console.log('\n' + '='.repeat(60));
-    console.log('🚀 SERVIDOR DE RANKING PRESIDENCIAL INICIADO');
+    console.log('🚀 SERVIDOR DE RANKING PRESIDENCIAL INICIADO (MEJORADO)');
     console.log('='.repeat(60));
     console.log(`\n📡 URL del servidor: http://localhost:${PORT}`);
     console.log(`\n📰 Fuente de datos: NewsAPI.org`);
-    console.log(`   API Key configurada: ${NEWSAPI_KEY !== 'TU_API_KEY_AQUI' ? '✅ Sí' : '❌ No - Reemplazar en el código'}`);
+    console.log(`   🔒 API Key: ${NEWSAPI_KEY ? '✅ Configurada de forma segura' : '❌ No configurada'}`);
     console.log(`\n📊 Endpoints disponibles:`);
     console.log(`   GET  http://localhost:${PORT}/api/ranking`);
     console.log(`   GET  http://localhost:${PORT}/api/candidate/:name`);
+    console.log(`   GET  http://localhost:${PORT}/api/trending/:name?days=30 (NUEVO)`);
+    console.log(`   GET  http://localhost:${PORT}/api/compare?candidates=x,y (NUEVO)`);
     console.log(`   POST http://localhost:${PORT}/api/cache/clear`);
     console.log(`   GET  http://localhost:${PORT}/health`);
     console.log(`\n💡 Candidatos monitoreados: ${CANDIDATES.length}`);
     console.log(`📰 Dominios configurados: ${CHILE_DOMAINS.split(',').length}`);
     console.log(`\n⏱️  Cache configurado: 1 hora`);
-    console.log(`\n🔑 Para usar NewsAPI:`);
-    console.log(`   1. Reemplaza NEWSAPI_KEY con tu API Key`);
-    console.log(`   2. Reinicia el servidor`);
-    console.log(`   3. Plan gratuito: 100 requests/día`);
     console.log(`\n✨ Presiona Ctrl+C para detener el servidor\n`);
     console.log('='.repeat(60) + '\n');
 });

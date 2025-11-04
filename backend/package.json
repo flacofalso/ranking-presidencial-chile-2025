@@ -1,7 +1,7 @@
 {
     "name": "ranking-presidencial-backend",
-    "version": "3.0.0",
-    "description": "Backend con NewsAPI para ranking presidencial Chile 2025",
+    "version": "4.0.0",
+    "description": "Backend MEJORADO con NewsAPI para ranking presidencial Chile 2025",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
@@ -11,7 +11,8 @@
         "elecciones",
         "chile",
         "ranking",
-        "newsapi"
+        "newsapi",
+        "seguridad"
     ],
     "author": "",
     "license": "MIT",
@@ -19,7 +20,8 @@
         "express": "^4.18.2",
         "axios": "^1.6.0",
         "cors": "^2.8.5",
-        "node-cache": "^5.1.2"
+        "node-cache": "^5.1.2",
+        "dotenv": "^16.3.1"
     },
     "devDependencies": {
         "nodemon": "^3.0.1"
