@@ -269,9 +269,12 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.05);
     }
@@ -918,7 +921,7 @@ body {
     transition: max-height 0.5s ease-in;
 }
 
-.accordion-content > div {
+.accordion-content>div {
     padding: 25px;
 }
 
@@ -1007,7 +1010,7 @@ body {
         font-size: 1rem;
     }
 
-    .accordion-content > div {
+    .accordion-content>div {
         padding: 20px;
     }
 }
@@ -1184,6 +1187,7 @@ body {
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1211,6 +1215,7 @@ body {
         opacity: 0;
         transform: scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -1371,20 +1376,44 @@ body.dark-mode .dark-mode-btn {
     animation: cardAppear 0.5s ease-out backwards;
 }
 
-.candidate-card:nth-child(1) { animation-delay: 0.1s; }
-.candidate-card:nth-child(2) { animation-delay: 0.2s; }
-.candidate-card:nth-child(3) { animation-delay: 0.3s; }
-.candidate-card:nth-child(4) { animation-delay: 0.4s; }
-.candidate-card:nth-child(5) { animation-delay: 0.5s; }
-.candidate-card:nth-child(6) { animation-delay: 0.6s; }
-.candidate-card:nth-child(7) { animation-delay: 0.7s; }
-.candidate-card:nth-child(8) { animation-delay: 0.8s; }
+.candidate-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.candidate-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.candidate-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.candidate-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.candidate-card:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.candidate-card:nth-child(6) {
+    animation-delay: 0.6s;
+}
+
+.candidate-card:nth-child(7) {
+    animation-delay: 0.7s;
+}
+
+.candidate-card:nth-child(8) {
+    animation-delay: 0.8s;
+}
 
 @keyframes cardAppear {
     from {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1413,5 +1442,254 @@ body.dark-mode .dark-mode-btn {
     .share-btn {
         width: 100%;
         text-align: center;
+    }
+}
+
+/* ========================================
+   MEJORAS MOBILE
+   ======================================== */
+
+/* Grid responsivo mejorado */
+@media (max-width: 480px) {
+    .ranking-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px;
+        padding: 0 5px;
+    }
+
+    .candidate-card {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .candidate-image {
+        height: 240px !important;
+    }
+
+    .btn {
+        padding: 15px 25px;
+        font-size: 1.05rem;
+        min-height: 50px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 15px;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-card .number {
+        font-size: 2rem;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .header p {
+        font-size: 0.95rem;
+    }
+}
+
+/* Tablets */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .ranking-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Gráficos en mobile */
+@media (max-width: 768px) {
+
+    .chart-container,
+    .chart-card {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .chart-container canvas {
+        max-height: 300px !important;
+    }
+
+    .charts-row {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .chart-card {
+        width: 100% !important;
+    }
+}
+
+/* Controles en mobile */
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .controls .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .loading {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+/* Modal en mobile */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 20px auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-body {
+        padding: 20px 15px;
+    }
+
+    .image-gallery {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+
+    .image-gallery-thumbnail {
+        height: 200px;
+    }
+}
+
+/* Filtros de fecha en mobile */
+@media (max-width: 768px) {
+    .date-filter {
+        padding: 15px;
+    }
+
+    .date-inputs {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .date-input-group {
+        width: 100%;
+    }
+
+    .date-presets {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .preset-btn {
+        padding: 12px 10px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Touch feedback */
+@media (hover: none) and (pointer: coarse) {
+    .candidate-card:active {
+        transform: scale(0.98);
+        transition: transform 0.1s;
+    }
+
+    .btn:active {
+        transform: scale(0.95);
+    }
+
+    .media-tag,
+    .share-btn,
+    .preset-btn {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Scroll suave */
+@media (max-width: 768px) {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Lazy loading placeholder */
+.candidate-image[loading="lazy"] {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode en mobile */
+@media (max-width: 768px) {
+
+    body.dark-mode .candidate-card,
+    body.dark-mode .stat-card,
+    body.dark-mode .chart-container {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Fuentes optimizadas */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+
+    h4 {
+        font-size: 1.1rem;
     }
 }
