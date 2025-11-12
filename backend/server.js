@@ -644,6 +644,146 @@ app.get('/health', (req, res) => {
     });
 });
 
+app.get('/api/trending/:name', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const days = parseInt(req.query.days) || 14;
+        const cacheKey = `trending_${name}_${days}`;
+
+        // Verificar cache
+        const cached = cache.get(cacheKey);
+        if (cached) {
+            console.log(`📦 Tendencia de ${name} desde cache`);
+            return res.json(cached);
+        }
+
+        // Calcular fechas
+        const toDate = new Date();
+        const fromDate = new Date();
+        fromDate.setDate(toDate.getDate() - days);
+
+        const fromStr = fromDate.toISOString().split('T')[0];
+        const toStr = toDate.toISOString().split('T')[0];
+
+        // Buscar noticias
+        const response = await axios.get(NEWSAPI_URL, {
+            params: {
+                q: name,
+                language: 'es',
+                from: fromStr,
+                to: toStr,
+                sortBy: 'publishedAt',
+                apiKey: NEWSAPI_KEY
+            }
+        });
+
+        // Agrupar por día
+        const timeline = {};
+        response.data.articles.forEach(article => {
+            const date = article.publishedAt.split('T')[0];
+            timeline[date] = (timeline[date] || 0) + 1;
+        });
+
+        // Crear array ordenado
+        const timelineArray = Object.keys(timeline)
+            .sort()
+            .map(date => ({
+                date,
+                mentions: timeline[date]
+            }));
+
+        const result = {
+            success: true,
+            data: {
+                candidate: name,
+                days,
+                totalMentions: response.data.totalResults,
+                timeline: timelineArray
+            }
+        };
+
+        cache.set(cacheKey, result);
+        res.json(result);
+
+    } catch (error) {
+        console.error('❌ Error en tendencia temporal:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener tendencia temporal'
+        });
+    }
+});
+
+// ===== ENDPOINT: Comparación de candidatos =====
+app.get('/api/compare', async (req, res) => {
+    try {
+        const candidates = req.query.candidates?.split(',') || [];
+
+        if (candidates.length < 2) {
+            return res.status(400).json({
+                success: false,
+                error: 'Se requieren al menos 2 candidatos'
+            });
+        }
+
+        const cacheKey = `compare_${candidates.sort().join('_')}`;
+
+        // Verificar cache
+        const cached = cache.get(cacheKey);
+        if (cached) {
+            console.log(`📦 Comparación desde cache`);
+            return res.json(cached);
+        }
+
+        // Obtener datos de cada candidato
+        const comparisons = await Promise.all(
+            candidates.map(async (name) => {
+                const cacheKey = `candidate_${name}`;
+                const cached = cache.get(cacheKey);
+
+                if (cached) {
+                    return cached;
+                }
+
+                const response = await axios.get(NEWSAPI_URL, {
+                    params: {
+                        q: name,
+                        language: 'es',
+                        domains: CHILE_DOMAINS.join(','),
+                        sortBy: 'relevancy',
+                        pageSize: 100,
+                        apiKey: NEWSAPI_KEY
+                    }
+                });
+
+                const articles = response.data.articles;
+                const metrics = calculateMetrics(articles, name);
+
+                return {
+                    name,
+                    mentions: response.data.totalResults,
+                    metrics
+                };
+            })
+        );
+
+        const result = {
+            success: true,
+            data: comparisons
+        };
+
+        cache.set(cacheKey, result);
+        res.json(result);
+
+    } catch (error) {
+        console.error('❌ Error en comparación:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Error al comparar candidatos'
+        });
+    }
+});
+
 app.get('/', (req, res) => {
     res.json({
         name: 'Ranking Presidencial Chile 2025 - API MEJORADA',
