@@ -8,8 +8,24 @@
     ],
     "routes": [
         {
-            "src": "/(.*)",
+            "src": "/api/(.*)",
             "dest": "backend/server.js"
+        },
+        {
+            "src": "/styles.css",
+            "dest": "/styles.css"
+        },
+        {
+            "src": "/images/(.*)",
+            "dest": "/images/$1"
+        },
+        {
+            "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico))",
+            "dest": "/$1"
+        },
+        {
+            "src": "/",
+            "dest": "/index.html"
         }
     ]
 }
