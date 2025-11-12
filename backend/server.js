@@ -23,15 +23,15 @@ if (!NEWSAPI_KEY || NEWSAPI_KEY === 'tu_api_key_aqui') {
 const cache = new NodeCache({ stdTTL: 3600 });
 
 // CORS configuración mejorada
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',')
     : ['http://localhost:3000', 'http://localhost:5500'];
 
 app.use(cors({
-    origin: function(origin, callback) {
+    origin: function (origin, callback) {
         // Permitir requests sin origin (como Postman)
         if (!origin) return callback(null, true);
-        
+
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
@@ -365,10 +365,10 @@ app.get('/api/trending/:name', async (req, res) => {
     try {
         const candidateName = decodeURIComponent(req.params.name);
         const days = parseInt(req.query.days) || 30;
-        
+
         const cacheKey = `trending_${candidateName}_${days}`;
         const cached = cache.get(cacheKey);
-        
+
         if (cached) {
             return res.json({
                 success: true,
@@ -380,30 +380,30 @@ app.get('/api/trending/:name', async (req, res) => {
         // Obtener datos de los últimos N días
         const now = new Date();
         const timeline = [];
-        
+
         // Generar timeline por días
         for (let i = days - 1; i >= 0; i--) {
             const date = new Date(now);
             date.setDate(date.getDate() - i);
             const dateStr = date.toISOString().split('T')[0];
-            
+
             timeline.push({
                 date: dateStr,
                 mentions: 0,
                 score: 0
             });
         }
-        
+
         // Obtener artículos del período completo
         const fromDate = new Date(now);
         fromDate.setDate(fromDate.getDate() - days);
-        
+
         const newsData = await searchWithNewsAPI(
             candidateName,
             fromDate.toISOString(),
             now.toISOString()
         );
-        
+
         // Distribuir artículos por día
         newsData.allArticles.forEach(article => {
             const articleDate = new Date(article.publishedAt).toISOString().split('T')[0];
@@ -413,21 +413,21 @@ app.get('/api/trending/:name', async (req, res) => {
                 dayData.score += 1; // Aquí podrías aplicar la ponderación también
             }
         });
-        
+
         const result = {
             candidate: candidateName,
             period: `${days} días`,
             timeline: timeline
         };
-        
+
         cache.set(cacheKey, result, 3600); // Cache por 1 hora
-        
+
         res.json({
             success: true,
             data: result,
             cached: false
         });
-        
+
     } catch (error) {
         console.error('Error en trending:', error);
         res.status(500).json({
@@ -441,17 +441,17 @@ app.get('/api/trending/:name', async (req, res) => {
 app.get('/api/compare', async (req, res) => {
     try {
         const candidates = req.query.candidates ? req.query.candidates.split(',') : [];
-        
+
         if (candidates.length < 2) {
             return res.status(400).json({
                 success: false,
                 error: 'Se requieren al menos 2 candidatos para comparar'
             });
         }
-        
+
         const cacheKey = `compare_${candidates.sort().join('_')}`;
         const cached = cache.get(cacheKey);
-        
+
         if (cached) {
             return res.json({
                 success: true,
@@ -459,13 +459,13 @@ app.get('/api/compare', async (req, res) => {
                 cached: true
             });
         }
-        
+
         const comparison = [];
-        
+
         for (const candidate of candidates) {
             const newsData = await searchWithNewsAPI(candidate);
             const categorizedData = categorizeResults(newsData.articlesBySource, candidate);
-            
+
             comparison.push({
                 name: candidate,
                 mentions: categorizedData.total,
@@ -473,15 +473,15 @@ app.get('/api/compare', async (req, res) => {
                 metrics: categorizedData.metrics
             });
         }
-        
+
         cache.set(cacheKey, comparison, 3600);
-        
+
         res.json({
             success: true,
             data: comparison,
             cached: false
         });
-        
+
     } catch (error) {
         console.error('Error en comparación:', error);
         res.status(500).json({
@@ -686,3 +686,21 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
+// Para Vercel Serverless
+if (process.env.VERCEL) {
+    module.exports = app;
+} else {
+    // Para desarrollo local
+    const server = app.listen(PORT, () => {
+        console.log('============================================================');
+        console.log('🚀 SERVIDOR DE RANKING PRESIDENCIAL INICIADO (MEJORADO)');
+        console.log('============================================================');
+        console.log(`\n📡 URL del servidor: http://localhost:${PORT}\n`);
+        console.log('📰 Fuente de datos: NewsAPI.org');
+        console.log(`   🔒 API Key: ${NEWSAPI_KEY ? '✅ Configurada de forma segura' : '❌ NO configurada'}`);
+        console.log('\n============================================================\n');
+        console.log('✨ Presiona Ctrl+C para detener el servidor\n');
+        console.log('============================================================\n');
+    });
+}
