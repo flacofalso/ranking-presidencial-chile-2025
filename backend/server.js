@@ -40,6 +40,10 @@ app.use(cors({
     }
 }));
 
+// Servir archivos estáticos desde la raíz del proyecto
+const path = require('path');
+app.use(express.static(path.join(__dirname, '..')));
+
 app.use(express.json());
 
 // Candidatos oficiales
@@ -683,6 +687,18 @@ app.listen(PORT, () => {
     console.log(`\n⏱️  Cache configurado: 1 hora`);
     console.log(`\n✨ Presiona Ctrl+C para detener el servidor\n`);
     console.log('='.repeat(60) + '\n');
+});
+
+// Ruta para servir el index.html en la raíz
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
+// Ruta catch-all para otras rutas (opcional)
+app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api')) {
+        res.sendFile(path.join(__dirname, '..', 'index.html'));
+    }
 });
 
 module.exports = app;
