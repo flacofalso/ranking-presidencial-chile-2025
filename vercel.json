@@ -9,19 +9,11 @@
     "routes": [
         {
             "src": "/api/(.*)",
-            "dest": "backend/server.js"
-        },
-        {
-            "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|webp))",
-            "dest": "/$1"
-        },
-        {
-            "src": "/",
-            "dest": "/index.html"
+            "dest": "/backend/server.js"
         },
         {
             "src": "/(.*)",
-            "dest": "/index.html"
+            "dest": "/$1"
         }
     ]
 }
