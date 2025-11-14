@@ -53,6 +53,11 @@
             <p>Menciones en medios digitales - Datos en tiempo real</p>
         </div>
 
+        <div id="last-update"
+            style="margin-top: 10px; padding: 8px 16px; background: rgba(255,255,255,0.1); border-radius: 20px; display: inline-block; font-size: 0.85rem; color: rgba(255,255,255,0.9);">
+            <span id="update-time">⏳ Cargando datos...</span>
+        </div>
+
         <!-- Disclaimer -->
         <div class="disclaimer">
             ⚠️ Esta herramienta analiza menciones en medios digitales y no constituye una encuesta o predicción
@@ -643,18 +648,71 @@
                     currentData = result.data;
                     displayRanking(result.data);
                     updateStats(result.data);
+
+                    // Guardar datos exitosos en localStorage
+                    const dataWithTimestamp = {
+                        data: result.data,
+                        timestamp: new Date().toISOString(),
+                        source: 'api'
+                    };
+                    localStorage.setItem('rankingData', JSON.stringify(dataWithTimestamp));
+
+                    // Actualizar indicador de última actualización
+                    const updateElement = document.getElementById('update-time');
+                    if (updateElement) {
+                        updateElement.innerHTML = `✅ Última actualización: Justo ahora`;
+                        updateElement.title = `Fecha exacta: ${new Date().toLocaleString('es-CL')}`;
+                    }
+
                     document.getElementById('timestamp').innerHTML =
-                        `Última actualización: ${new Date(result.timestamp).toLocaleString('es-CL')}${result.cached ? ' (desde cache)' : ' (datos frescos)'}${result.duration ? ' - Duración: ' + result.duration : ''}<br><span style="color: #667eea; font-weight: 600;">📅 Período: ${from} a ${to} (${daysBetween(from, to) + 1} días)</span>`;
+                        `Última actualización: ${new Date(result.timestamp).toLocaleString('es-CL')}${result.cached ? ' (desde cache)' : ' (en tiempo real)'}`;
                 } else {
                     throw new Error(result.error || 'Error desconocido');
                 }
             } catch (error) {
-                errorContainer.innerHTML = `
+                console.error('❌ Error al cargar datos:', error);
+
+                // Intentar cargar datos desde localStorage
+                const cachedData = localStorage.getItem('rankingData');
+
+                if (cachedData) {
+                    try {
+                        const parsed = JSON.parse(cachedData);
+                        currentData = parsed.data;
+                        displayRanking(parsed.data);
+                        updateStats(parsed.data);
+
+                        // Actualizar indicador mostrando que son datos cacheados
+                        const cacheDate = new Date(parsed.timestamp);
+                        const now = new Date();
+                        const diffMs = now - cacheDate;
+                        const diffHours = Math.floor(diffMs / 3600000);
+
+                        const updateElement = document.getElementById('update-time');
+                        if (updateElement) {
+                            updateElement.innerHTML = `💾 Última actualización: Hace ${diffHours} horas (datos guardados)`;
+                            updateElement.title = `Fecha exacta: ${cacheDate.toLocaleString('es-CL')}`;
+                        }
+
+                        errorContainer.innerHTML = `
+                    <div class="error">
+                        ℹ️ Mostrando última versión guardada de los datos (límite del API alcanzado)
+                    </div>
+                `;
+                    } catch (e) {
+                        errorContainer.innerHTML = `
                     <div class="error">
                         ❌ Error al cargar datos: ${error.message}
                     </div>
                 `;
-                rankingGrid.innerHTML = '';
+                    }
+                } else {
+                    errorContainer.innerHTML = `
+                <div class="error">
+                    ❌ Error al cargar datos: ${error.message}
+                </div>
+            `;
+                }
             } finally {
                 hideLoadingModal();
             }
