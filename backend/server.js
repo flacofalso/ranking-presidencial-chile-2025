@@ -20,7 +20,7 @@ if (!NEWSAPI_KEY || NEWSAPI_KEY === 'tu_api_key_aqui') {
 }
 
 // Cache: guarda resultados por 1 hora
-const cache = new NodeCache({ stdTTL: 3600 });
+const cache = new NodeCache({ stdTTL: 43200 }); // 12 horas
 
 // CORS configuración mejorada
 const allowedOrigins = process.env.ALLOWED_ORIGINS
