@@ -72,28 +72,26 @@
                 <!-- Nueva sección de gráficos adicionales -->
                 <div class="charts-dashboard" style="display: flex; flex-direction: column; gap: 25px; margin: 30px 0;">
 
-                    <!-- Gráfico de Tendencia Temporal -->
-                    <div class="chart-card"
-                        style="background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);">
-                        <div class="chart-header"
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
-                            <h3 style="color: #667eea; font-size: 1.2rem; margin: 0;">📈 Tendencia Temporal</h3>
-                            <div class="chart-controls" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <select id="trend-candidate-select"
-                                    style="padding: 8px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 0.9rem; background: white; cursor: pointer;">
-                                    <option value="">Seleccionar candidato...</option>
-                                </select>
-                                <select id="trend-days-select"
-                                    style="padding: 8px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 0.9rem; background: white; cursor: pointer;">
-                                    <option value="7">Últimos 7 días</option>
-                                    <option value="14" selected>Últimos 14 días</option>
-                                    <option value="30">Últimos 30 días</option>
-                                </select>
-                            </div>
+                    <!-- Fuentes Monitoreadas -->
+                    <div class="chart-card">
+                        <h3>📰 Fuentes Monitoreadas</h3>
+                        <p style="margin-bottom: 15px; color: #666; font-size: 0.95rem;">
+                            Datos recopilados desde los principales medios de comunicación chilenos
+                        </p>
+                        <div class="sources-grid">
+                            <span class="source-badge">latercera.com</span>
+                            <span class="source-badge">emol.com</span>
+                            <span class="source-badge">biobiochile.cl</span>
+                            <span class="source-badge">cooperativa.cl</span>
+                            <span class="source-badge">t13.cl</span>
+                            <span class="source-badge">cnn.cl</span>
+                            <span class="source-badge">meganoticias.cl</span>
+                            <span class="source-badge">cnnchile.com</span>
+                            <span class="source-badge">df.cl</span>
                         </div>
-                        <div class="chart-body" style="position: relative; min-height: 300px;">
-                            <canvas id="trendChart"></canvas>
-                        </div>
+                        <p style="margin-top: 15px; font-size: 0.85rem; color: #888;">
+                            <strong>Nota:</strong> Los datos se actualizan automáticamente cada hora usando NewsAPI
+                        </p>
                     </div>
 
                     <!-- Grid de gráficos secundarios -->
@@ -627,7 +625,6 @@
                 errorContainer.innerHTML = `
                     <div class="error">
                         ❌ Error al cargar datos: ${error.message}
-                        <br><small>Verifica que el servidor esté corriendo en http://localhost:3001</small>
                     </div>
                 `;
                 rankingGrid.innerHTML = '';
